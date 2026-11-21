@@ -5,6 +5,7 @@ const app=readFileSync(new URL("../app/app.js",import.meta.url),"utf8");
 const html=readFileSync(new URL("../index.html",import.meta.url),"utf8");
 const rust=readFileSync(new URL("../src-tauri/src/main.rs",import.meta.url),"utf8");
 const tauri=readFileSync(new URL("../src-tauri/tauri.conf.json",import.meta.url),"utf8");
+const legacyShortcutCleanup=readFileSync(new URL("../src-tauri/windows/fragments/legacy-shortcut-cleanup.wxs",import.meta.url),"utf8");
 const workflow=readFileSync(new URL("../.github/workflows/build-windows.yml",import.meta.url),"utf8");
 const projectModel=readFileSync(new URL("../app/projectModel.js",import.meta.url),"utf8");
 const ids=new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]));
@@ -37,8 +38,8 @@ test("opening and closing effects incorporate boundary item durations",()=>{
   assert.match(rust,/afade=t=out:st=/);
 });
 test("the current build and copyright are available inside the interface",()=>{
-  assert.match(html,/Build 0\.12\.14 Development Testing Build\. Copyright 2026 Open Door Design\./);
-  assert.match(app,/Accessible Production Studio Build 0\.12\.14 Development Testing Build/);
+  assert.match(html,/Build 0\.12\.15 Development Testing Build\. Copyright 2026 Open Door Design\./);
+  assert.match(app,/Accessible Production Studio Build 0\.12\.15 Development Testing Build/);
 });
 test("the product rename preserves existing projects and application data",()=>{
   assert.match(tauri,/"productName": "Accessible Production Studio"/);
@@ -49,6 +50,10 @@ test("the product rename preserves existing projects and application data",()=>{
 test("the Windows MSI replaces the old Accessible Media Editor installation",()=>{
   assert.match(tauri,/"targets": \["msi"\]/);
   assert.match(tauri,/"upgradeCode": "344ea42c-3ec4-5751-b132-35a5319deca4"/);
+  assert.match(tauri,/"fragmentPaths": \["\.\/windows\/fragments\/legacy-shortcut-cleanup\.wxs"\]/);
+  assert.match(tauri,/"componentRefs": \["LegacyDesktopShortcutCleanup"\]/);
+  assert.match(legacyShortcutCleanup,/Name="Accessible Media Editor\.lnk" On="install"/);
+  assert.doesNotMatch(legacyShortcutCleanup,/Documents|Library|Projects|Exports|Recordings|Working/);
   assert.doesNotMatch(tauri,/"nsis"/);
   assert.match(workflow,/AccessibleProductionStudioWindowsMSI/);
   assert.doesNotMatch(workflow,/bundle\/nsis/);

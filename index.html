@@ -25,7 +25,7 @@
   <header class="app-header">
     <h1 id="project-heading" tabindex="-1">Accessible Production Studio</h1>
     <p id="project-summary">No media open.</p>
-    <p class="build-information">Build 0.12.14 Development Testing Build. Copyright 2026 Open Door Design.</p>
+    <p class="build-information">Build 0.12.15 Development Testing Build. Copyright 2026 Open Door Design.</p>
     <button type="button" id="instructions-shortcuts-button">Instructions and Keyboard Shortcuts (F1)</button>
   </header>
 
@@ -356,6 +356,7 @@
         <p>Press Comma to decrease playback speed or Period to increase playback speed without leaving the editor.</p>
         <div class="button-row">
           <button type="button" id="audio-editor-play" disabled>Play or Pause (X)</button>
+          <button type="button" id="audio-editor-audition" disabled>Audition Bracketed Range or Play From Playhead (Space)</button>
           <button type="button" id="audio-editor-mark-in" disabled>Set Left Bracket</button>
           <button type="button" id="audio-editor-mark-out" disabled>Set Right Bracket</button>
           <button type="button" id="audio-editor-clear-marks" disabled>Clear Brackets</button>
@@ -370,7 +371,7 @@
         <label for="audio-edited-copy-name">Edited audio source name</label>
         <input type="text" id="audio-edited-copy-name" value="Edited Audio">
         <button type="button" id="audio-editor-save-range" disabled>Keep Bracketed Range as New Audio Source</button>
-        <p>The bracketed range is saved automatically as a new Shared Audio Library entry. The original audio source is not changed or deleted. Use Export Selected Audio Copies to Folder to create ordinary files outside the app.</p>
+        <p>The bracketed range is rendered and saved as a new Shared Audio Library entry. The original audio source is not changed or deleted. Use Export Selected Audio Files to create an ordinary file outside the app.</p>
       </section>
     </div>
   </main>
@@ -634,7 +635,7 @@
         <li>Classify Selected as Music and Classify Selected as Other Audio change library organization only. They do not move, duplicate, edit, or delete the source file.</li>
         <li>Playback speed changes listening speed without changing the saved source duration or pitch. Press Comma to decrease speed or Period to increase speed in Media Editor or Audio Editor.</li>
         <li>Analyze and Create Shortened Copies processes one or more selected chapters, reports the proposed reduction, asks for confirmation, and saves the results in a separate Shortened Pauses collection for that book. The originals are never changed.</li>
-        <li>Export Selected Audio Copies to Folder creates ordinary audio files outside the app.</li>
+        <li>Export Selected Audio Files creates ordinary audio files outside the app. A bracketed range kept in Audio Clip Editor is rendered first, so its exported file contains only that saved range.</li>
         <li>Ctrl+Alt+Space pauses or resumes an active recording.</li>
         <li>After stopping, review the recording before keeping it, recording again, or discarding it.</li>
         <li>Kept recordings enter the Shared Audio Library and can be deliberately added to Media Editor or Presentation.</li>
@@ -646,7 +647,8 @@
         <li>Preview Selected Audio is a toggle. Activate it again, or press X, to stop the library preview.</li>
         <li>Ctrl+Page Up or Ctrl+Page Down moves among Recording Studio, Review Recording when available, Shared Audio Library, and Audio Clip Editor.</li>
         <li>Open Selected Audio in Audio Clip Editor activates the selected source without changing the original file.</li>
-        <li>In Audio Clip Editor, X plays or pauses. Arrow keys, U and I, Home and End, Alt+Arrow, and Ctrl+G use the same timing model as Media Editor.</li>
+        <li>In Audio Clip Editor, X plays or pauses. With a completed bracketed range, Space auditions only that range and then returns to the original playhead position. Without a completed range, Space plays or pauses from the playhead. Arrow keys, U and I, Home and End, Alt+Arrow, and Ctrl+G use the same timing model as Media Editor.</li>
+        <li>Keep Bracketed Range as New Audio Source renders a new nondestructive audio copy, selects it in Shared Audio Library, and leaves the original source unchanged. The selected copy can then be previewed or exported.</li>
         <li>Left and Right Brackets select a range. Ctrl+Delete or Keep Bracketed Range as New Audio Source saves that range as a new nondestructive source.</li>
       </ul>
       </div>

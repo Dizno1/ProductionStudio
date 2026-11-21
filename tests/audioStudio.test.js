@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { audioCollectionInfo, itemMatchesAudioArea, sortAudioItems } from "../app/audioStudio.js";
+import { JSDOM } from "jsdom";
+import { audioCollectionInfo, createAudioStudio, itemMatchesAudioArea, sortAudioItems } from "../app/audioStudio.js";
 
 const html=readFileSync(new URL("../index.html",import.meta.url),"utf8");
 const studio=readFileSync(new URL("../app/audioStudio.js",import.meta.url),"utf8");
@@ -60,8 +61,8 @@ test("AudioStudio uses app-wide transport and section navigation commands",()=>{
 
 test("bracketed audio ranges are saved nondestructively",()=>{
   assert.match(studio,/Keep Bracketed Range as New Audio Source|saveRange/);
-  assert.match(studio,/editSegments:\[\{start,end\}\]/);
-  assert.match(studio,/original audio source is not changed|nondestructive/i);
+  assert.match(studio,/editSegments:\[\{start:0,end:duration\}\]/);
+  assert.match(studio,/original source is unchanged|nondestructive/i);
 });
 
 test("Alt S is contextual and the active workspace survives refresh",()=>{
@@ -140,10 +141,49 @@ test("Audio Editor workspace sections have unique descriptive accessible names",
   assert.match(html,/Ctrl\+Page Up or Ctrl\+Page Down moves among Recording Studio, Review Recording when available, Shared Audio Library, and Audio Clip Editor/);
 });
 
-test("all visible and native build identification is 0.12.14",()=>{
-  assert.match(html,/Build 0\.12\.14 Development Testing Build/);
-  assert.match(app,/Accessible Production Studio Build 0\.12\.14/);
-  assert.match(rust,/Build 0\.12\.14 executable started/);
+test("all visible and native build identification is 0.12.15",()=>{
+  assert.match(html,/Build 0\.12\.15 Development Testing Build/);
+  assert.match(app,/Accessible Production Studio Build 0\.12\.15/);
+  assert.match(rust,/Build 0\.12\.15 executable started/);
+});
+
+test("Audio Clip Editor auditions only the completed bracketed range and returns",()=>{
+  assert.match(html,/id="audio-editor-audition"/);
+  assert.match(studio,/function auditionSelection\(\)/);
+  assert.match(studio,/auditionReturn=cursor/);
+  assert.match(studio,/auditionEnd=end/);
+  assert.match(studio,/Audition complete\. Returned to/);
+  assert.match(app,/activeWorkspace==="audio"\?audioStudio\?\.auditionSelection\(\)/);
+});
+
+test("keeping a bracketed audio range renders a real exportable working file",()=>{
+  assert.match(studio,/async function saveRange\(\)/);
+  assert.match(studio,/invoke\("render_working_edit"/);
+  assert.match(studio,/source:path,workingSource:path/);
+  assert.match(studio,/originalSource:editingItem\.originalSource\|\|editingItem\.source/);
+  assert.match(studio,/new source is selected and ready to preview or export/i);
+});
+
+test("Audio Clip Editor performs bracket audition return and renders the kept range",async()=>{
+  const dom=new JSDOM(html,{url:"https://app.local/"}),previous={window:globalThis.window,document:globalThis.document,Option:globalThis.Option,CustomEvent:globalThis.CustomEvent,localStorage:globalThis.localStorage,navigator:globalThis.navigator};
+  globalThis.window=dom.window;globalThis.document=dom.window.document;globalThis.Option=dom.window.Option;globalThis.CustomEvent=dom.window.CustomEvent;globalThis.localStorage=dom.window.localStorage;Object.defineProperty(globalThis,"navigator",{value:dom.window.navigator,configurable:true});
+  const elements=Object.fromEntries([...dom.window.document.querySelectorAll("[id]")].map(element=>[element.id,element])),items=[{id:"source-1",name:"Chapter 1.mp3",label:"Chapter 1",kind:"Audio",source:"C:/audio/chapter1.mp3",duration:10,inPoint:0,outPoint:10,editSegments:[{start:0,end:10}],audioCategory:"other"}],added=[],invocations=[],announcements=[];
+  for(const id of ["audio-editor-media","audio-library-preview","audio-recording-preview"]){const media=elements[id];let paused=true;Object.defineProperty(media,"paused",{get:()=>paused,configurable:true});media.play=async()=>{paused=false;};media.pause=()=>{paused=true;};media.load=()=>{};}
+  try{
+    createAudioStudio({elements,invoke:async(command,args)=>{invocations.push({command,args});return"C:/working/bracketed.m4a";},convertFileSrc:value=>value,announce:text=>announcements.push(text),getAudioItems:()=>items,addLibraryAudio:item=>{items.push(item);added.push(item);},addAudioToProject:()=>{},removeLibraryAudio:()=>{},exportAudioFiles:async()=>{},importAudioFiles:async()=>({total:0}),importAudioFolder:async()=>({total:0}),retryAudioFiles:async()=>({total:0}),classifyLibraryAudio:()=>{}});
+    elements["audio-library-items"].options[0].selected=true;
+    elements["audio-edit-source"].click();
+    const playhead=elements["audio-editor-playhead"];
+    playhead.value="2";playhead.dispatchEvent(new dom.window.Event("input"));elements["audio-editor-mark-in"].click();
+    playhead.value="4";playhead.dispatchEvent(new dom.window.Event("input"));elements["audio-editor-mark-out"].click();
+    playhead.value="8";playhead.dispatchEvent(new dom.window.Event("input"));elements["audio-editor-audition"].click();await Promise.resolve();
+    assert.equal(elements["audio-editor-media"].currentTime,2);assert.equal(elements["audio-editor-audition"].textContent,"Stop Audition and Return (Space)");
+    elements["audio-editor-audition"].click();assert.equal(Number(playhead.value),8);
+    elements["audio-edited-copy-name"].value="Chapter 1 excerpt";elements["audio-editor-save-range"].click();await new Promise(resolve=>setTimeout(resolve,0));
+    assert.equal(invocations.at(-1).command,"render_working_edit");assert.deepEqual(invocations.at(-1).args.segments,[{start:2,end:4}]);assert.equal(added[0].source,"C:/working/bracketed.m4a");assert.deepEqual(added[0].editSegments,[{start:0,end:2}]);assert.match(announcements.at(-1),/ready to preview or export/i);
+  }finally{
+    dom.window.close();globalThis.window=previous.window;globalThis.document=previous.document;globalThis.Option=previous.Option;globalThis.CustomEvent=previous.CustomEvent;globalThis.localStorage=previous.localStorage;Object.defineProperty(globalThis,"navigator",{value:previous.navigator,configurable:true});
+  }
 });
 
 test("AudioStudio presents opening before the library and selected-item actions after it",()=>{
@@ -203,7 +243,7 @@ test("playback position is quiet while playing and speed has direct shortcuts",(
   assert.match(shortcuts,/fasterPlayback.*key:"\."/);
   assert.match(app,/adjustMediaPlaybackSpeed/);
   assert.match(html,/Press Comma to decrease playback speed or Period to increase playback speed/);
-  assert.match(studio,/saved automatically to the Shared Audio Library/);
+  assert.match(studio,/created and selected in Shared Audio Library/);
 });
 
 test("audio playhead time, preview resume, batch silence processing, and long import progress are accessible",()=>{

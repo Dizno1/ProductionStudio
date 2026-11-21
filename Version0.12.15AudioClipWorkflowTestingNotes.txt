@@ -1,0 +1,54 @@
+Accessible Production Studio
+Build 0.12.15 Audio Clip Workflow Testing Notes
+
+Installer replacement cleanup
+
+Install Build 0.12.15 over Build 0.12.14 or another installed Accessible Production Studio development build.
+
+Confirm that Accessible Production Studio remains installed and launches normally.
+
+If an obsolete Accessible Media Editor shortcut remains on the desktop from the product-name migration, confirm that the installer removes it automatically.
+
+Confirm that projects, saved library items, recordings, exports, and working media remain available. The installer cleanup must not remove user data.
+
+Audio Clip Editor workflow
+
+Open Audio Editor and choose a source in Shared Audio Library.
+
+Activate Open Selected Audio in Audio Clip Editor.
+
+Confirm that focus moves to the audio playhead and the source name and human-readable duration are announced.
+
+Use X to play and pause continuously.
+
+Use Comma and Period to change playback speed without moving focus.
+
+Set a Left Bracket and a later Right Bracket.
+
+Move the playhead outside the bracketed range and press Space.
+
+Confirm that playback starts at the Left Bracket, stops at the Right Bracket, and returns to the playhead position that was active before the audition.
+
+Press Space again during an audition. Confirm that the audition stops immediately and returns to the original playhead position.
+
+Enter a meaningful edited audio source name.
+
+Activate Keep Bracketed Range as New Audio Source.
+
+Confirm that rendering progress is announced, the original source remains unchanged, and the new source becomes selected in Shared Audio Library.
+
+Preview the selected new source. Confirm that it contains only the bracketed range.
+
+Activate Export Selected Audio Files, choose a destination folder, and confirm that an ordinary audio file is created from the edited range.
+
+Confirm that focus returns to Shared Audio Library after keeping or exporting the source.
+
+Regression checks
+
+Open a saved presentation project and confirm that Presentation still receives focus.
+
+Confirm that Media Editor playback, brackets, source editing, and export remain available.
+
+Confirm that Ctrl+Tab switches workspaces and Ctrl+Page Up or Ctrl+Page Down moves among sections within Audio Editor.
+
+Confirm that F1 describes Space audition, bracketed-range rendering, and export accurately.

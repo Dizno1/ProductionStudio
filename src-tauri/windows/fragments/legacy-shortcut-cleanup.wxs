@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <DirectoryRef Id="DesktopFolder">
+      <Component Id="LegacyDesktopShortcutCleanup" Guid="F224845E-A96B-4B87-957D-397826171469">
+        <RemoveFile Id="RemoveLegacyAccessibleMediaEditorShortcut" Name="Accessible Media Editor.lnk" On="install" />
+        <RegistryValue Root="HKCU" Key="Software\Open Door Design\Accessible Production Studio" Name="LegacyShortcutCleanup" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+</Wix>
